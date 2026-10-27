@@ -25,17 +25,18 @@ AXIS_LABEL = {"execution_leverage": "Execution leverage", "steering": "Steering"
 DECK_ROW = 5
 
 CSS = """
-:root{--display:"Iowan Old Style","Palatino Linotype",Palatino,Charter,"Book Antiqua",Georgia,serif;--bg:#fff;--ink:#111;--muted:#6b6b6b;--line:#2f6f5e;--hair:rgba(17,17,17,.10);--card:#fff;
+:root{--tint:rgba(47,111,94,.07);--display:"Iowan Old Style","Palatino Linotype",Palatino,Charter,"Book Antiqua",Georgia,serif;--bg:#fff;--ink:#111;--muted:#6b6b6b;--line:#2f6f5e;--hair:rgba(17,17,17,.10);--card:#fff;
 --shadow:rgba(0,0,0,.18);--font:"Space Grotesk",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#111312;--ink:#ecebe7;--muted:#9a9f9c;
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--tint:rgba(111,195,168,.09);--bg:#111312;--ink:#ecebe7;--muted:#9a9f9c;
 --line:#6fc3a8;--hair:rgba(255,255,255,.12);--card:#181b1a;--shadow:rgba(0,0,0,.6)}}
-:root[data-theme=dark]{--bg:#111312;--ink:#ecebe7;--muted:#9a9f9c;--line:#6fc3a8;--hair:rgba(255,255,255,.12);
+:root[data-theme=dark]{--tint:rgba(111,195,168,.09);--bg:#111312;--ink:#ecebe7;--muted:#9a9f9c;--line:#6fc3a8;--hair:rgba(255,255,255,.12);
 --card:#181b1a;--shadow:rgba(0,0,0,.6)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--font);overflow-x:clip}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16.5px/1.65 var(--font);overflow-x:clip;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html{scroll-behavior:smooth}
 .frame{max-width:1200px;margin:0 auto;min-height:100dvh;border-left:1px solid var(--line);border-right:1px solid var(--line);padding:48px 32px 64px}
 @media (max-width:720px){.frame{padding:32px 16px 48px;border:0}}
-.wrap{max-width:600px;margin:0 auto}
+.wrap{max-width:640px;margin:0 auto}
 h1{font:600 40px/1.05 var(--display);letter-spacing:-.02em;margin:0}
 .sub{display:block;font:italic 400 17px/1.4 var(--display);letter-spacing:0;color:var(--muted);margin-top:8px}
 @media (max-width:600px){h1{font-size:32px}}
@@ -48,22 +49,58 @@ border:1px solid var(--line);border-radius:99px;padding:2px 6px;cursor:help;vert
 padding:10px 12px;background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:0 14px 34px -16px var(--shadow);
 font-size:13px;line-height:1.5;text-align:left;opacity:0;pointer-events:none;transition:opacity .15s;z-index:300}
 .why:hover [role=tooltip],.why:focus [role=tooltip]{opacity:1}
+@media (max-width:600px){.why [role=tooltip]{position:fixed;left:16px;right:16px;bottom:16px;width:auto;transform:none}}
 .why .wh{display:block;font-weight:600;margin-bottom:4px}.why .wi{display:block;padding-left:10px;text-indent:-10px;margin:0 0 4px}
 .why .wi::before{content:"· "}
 .meta{font-size:13px;margin:6px 0 0}
-.verdict{margin:16px 0 0;max-width:560px}
-/* sections: a 28px centered tick, then a heading at body size */
-.sec::before{content:"";display:block;width:28px;height:1px;background:var(--line);margin:40px auto}
-.sec-h{font-size:16px;font-weight:600;letter-spacing:-.01em;line-height:1.3;margin:0 0 12px}
-.prose p{margin:0 0 16px}.prose p:last-child{margin-bottom:0}
-.prose h2{font-size:16px;font-weight:600;letter-spacing:-.01em;line-height:1.3;margin:24px 0 12px}
-.prose ul{margin:0 0 16px;padding-left:20px}.prose li{margin:0 0 6px}
-.prose .try{color:var(--muted)}
+.verdict{margin:20px 0 0;max-width:600px;font:400 20px/1.5 var(--display)}
+/* sections: hairline + numbered kicker + serif heading */
+.sec{margin-top:72px;padding-top:28px;border-top:1px solid var(--hair);scroll-margin-top:64px}
+.sec-k{font:500 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--line);margin:0 0 10px}
+.sec-h{font:600 30px/1.15 var(--display);letter-spacing:-.015em;margin:0 0 8px}
+.sec-d{color:var(--muted);font-size:15px;margin:0 0 24px;max-width:62ch}
+.prose{max-width:64ch}.prose p{margin:0 0 16px}.prose p:last-child{margin-bottom:0}
+.lead{font:400 20px/1.55 var(--display);margin:0 0 28px}
+h3.sub-h{font:600 19px/1.3 var(--display);letter-spacing:-.01em;margin:36px 0 12px}
+.try{color:var(--muted)}
 .small{font-size:13px;color:var(--muted)}
-/* "How you use AI": borderless two-column list */
-.badges{display:grid;grid-template-columns:1fr 1fr;gap:20px 24px}
-@media (max-width:600px){.badges{grid-template-columns:1fr}}
-.badges p{margin:0 0 4px}.b-name{font-weight:600}.b-ev{font-size:13px}
+.stack{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+.chip{font-size:12.5px;border:1px solid var(--hair);border-radius:99px;padding:2px 10px;color:var(--muted)}
+/* card lists (projects, strengths, growth, insights) */
+.cards2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+@media (max-width:600px){.cards2{grid-template-columns:1fr}}
+.pc{border:1px solid var(--hair);border-radius:6px;padding:14px 16px;background:var(--card)}
+.pc b{display:block;font:600 16px/1.3 var(--display);margin:0 0 4px}.pc span{font-size:14px;color:var(--muted);line-height:1.5}
+.items{list-style:none;padding:0;margin:0;counter-reset:it}
+.items li{position:relative;counter-increment:it;padding:0 0 0 44px;margin:0 0 22px}
+.items li::before{content:counter(it,decimal-leading-zero);position:absolute;left:0;top:2px;font:500 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--line);letter-spacing:.06em}
+.items .it-t{display:block;font:600 18px/1.3 var(--display);margin:0 0 4px}
+.items p{margin:0}
+.callout{margin:12px 0 0;padding:10px 14px;border-left:2px solid var(--line);background:var(--tint);border-radius:0 6px 6px 0;font-size:15px}
+.callout b{font-weight:600;color:var(--line);margin-right:6px}
+.watch{border:1px dashed var(--line);border-radius:6px;padding:16px 18px;margin:8px 0 0}
+.watch .k{font:500 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--line);margin:0 0 8px}
+.watch p{margin:0;font-size:15px}
+/* section index, sticky under the deck */
+.toc{position:sticky;top:0;z-index:150;margin:40px -16px 0;padding:10px 16px;display:flex;flex-wrap:wrap;gap:4px 18px;
+background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--hair)}
+.toc a{font-size:13px;color:var(--muted);text-decoration:none;white-space:nowrap}
+.toc a span{font:500 11px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--line);margin-right:5px}
+.toc a:hover{color:var(--ink)}
+/* "How you use AI": a 2x2 quadrant */
+.quad{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto 1fr 1fr;gap:8px}
+.qx{font:500 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:center;padding:4px 0}
+.qy{writing-mode:vertical-rl;transform:rotate(180deg);font:500 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:center}
+.qc{border:1px solid var(--hair);border-radius:8px;padding:16px 16px 14px;background:var(--card);display:flex;flex-direction:column;gap:6px;min-height:170px}
+.qc.top{border-color:var(--line);box-shadow:0 0 0 1px var(--line) inset}
+.qc.off{opacity:.55}
+.qc .qn{font:600 18px/1.25 var(--display)}
+.qc .qg{font-size:14px;line-height:1.5;color:var(--muted);flex:1}
+.qc .qv{display:flex;align-items:baseline;gap:8px;font-size:13px;color:var(--muted)}
+.qc .qv b{font:600 28px/1 var(--display);color:var(--ink);font-variant-numeric:tabular-nums}
+.qbar{height:4px;border-radius:2px;background:var(--grid);overflow:hidden}.qbar i{display:block;height:100%;background:var(--s1);border-radius:2px}
+.qtag{display:none;font-size:11.5px;color:var(--line)}
+@media (max-width:600px){.quad{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto}.qx,.qy,.qcorner{display:none}.qc{min-height:0}.qtag{display:block}}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{text-align:left;vertical-align:top;padding:8px 8px 8px 0;border-bottom:1px solid var(--hair)}
 th{font-weight:600}.scroll{overflow-x:auto}.num{font-variant-numeric:tabular-nums}
@@ -256,86 +293,136 @@ def _bars(rows, legend=None):
     return "".join(out) + "</div>"
 
 
-def _section(title, inner):
-    return f'<section class="sec"><p class="sec-h">{e(title)}</p>{inner}</section>'
+SECTIONS = []      # (id, number, title) in page order, filled as sections render, read by the index
+
+
+def _section(title, inner, sid, desc=""):
+    n = f"{len(SECTIONS) + 1:02d}"
+    SECTIONS.append((sid, n, title))
+    d = f'<p class="sec-d">{desc}</p>' if desc else ""
+    return (f'<section class="sec" id="{sid}"><p class="sec-k">{n}</p><h2 class="sec-h">{e(title)}</h2>{d}{inner}</section>')
+
+
+def _toc():
+    return '<nav class="toc" aria-label="Sections">' + "".join(
+        f'<a href="#{sid}"><span>{n}</span>{e(t)}</a>' for sid, n, t in SECTIONS) + "</nav>"
 
 
 def _watchpoint(w):
     if not (w["planned_sessions"] or w["unplanned_sessions"]):
-        return "<p><b>Watchpoint:</b> no sessions changed code, so there's nothing to compare yet.</p>"
-    f = lambda x: "—" if x is None else f"{x:.2f}"
-    n = w["clean_planned_ships"]
-    tail = ("Planned work may have been harder, so this doesn't show that planning caused the difference."
-            if w["conclusive"] else
-            f"With {n} clean planned ship{'s' if n != 1 else ''} (planned, committed, zero unresolved errors), "
-            "it's too early to say whether planning gives you cleaner finishes; you need at least 2 to compare.")
-    return (f"<p><b>Watchpoint:</b> unresolved errors per session, meaning errors not followed by a passing test "
-            f"or commit in that session. Your {w['planned_sessions']} planned build sessions averaged "
-            f"{f(w['planned_unresolved_per_session'])}, against {f(w['unplanned_unresolved_per_session'])} across "
-            f"{w['unplanned_sessions']} without a plan. {e(tail)}</p>")
+        body = "No sessions changed code, so there's nothing to compare yet."
+    else:
+        f = lambda x: "—" if x is None else f"{x:.2f}"
+        n = w["clean_planned_ships"]
+        tail = ("Planned work may have been harder, so this doesn't show that planning caused the difference."
+                if w["conclusive"] else
+                f"With {n} clean planned ship{'s' if n != 1 else ''} (planned, committed, zero unresolved errors), "
+                "it's too early to say whether planning gives you cleaner finishes; you need at least 2 to compare.")
+        body = (f"Unresolved errors per session, meaning errors not followed by a passing test or commit in that "
+                f"session. Your {w['planned_sessions']} planned build sessions averaged "
+                f"<b>{f(w['planned_unresolved_per_session'])}</b>, against "
+                f"<b>{f(w['unplanned_unresolved_per_session'])}</b> across {w['unplanned_sessions']} without a plan. "
+                f"{e(tail)}")
+    return f'<div class="watch"><p class="k">Planning watchpoint</p><p>{body}</p></div>'
+
+
+def _try(x):
+    return f'<p class="callout"><b>Try</b>{e(x["try"])}</p>' if x.get("try") else ""
+
+
+def _items(xs, prefix):
+    return '<ol class="items">' + "".join(
+        f'<li><span class="it-t">{e(x["title"])}</span><p>{e(x.get("evidence") or x.get("detail") or "")}'
+        f'{_why(x.get("why"), f"{prefix}{i}")}</p>{_try(x)}</li>' for i, x in enumerate(xs)) + "</ol>"
+
+
+def _narrative(L):
+    syn = (L or {}).get("synthesis")
+    if not syn:
+        return ""
+    P = []
+    if syn["narrative"]:
+        P.append(f'<p class="lead">{e(syn["narrative"]["text"])}{_why(syn["narrative"]["why"], "n")}</p>')
+    if syn["built"]["projects"]:
+        P.append('<h3 class="sub-h">What you built</h3><div class="cards2">' + "".join(
+            f'<div class="pc"><b>{e(p["name"])}</b><span>{e(p["what"])}</span></div>' for p in syn["built"]["projects"])
+            + "</div>")
+    if syn["built"]["stack"]:
+        P.append('<div class="stack">' + "".join(f'<span class="chip">{e(x)}</span>' for x in syn["built"]["stack"]) + "</div>")
+    return _section("Your narrative", '<div class="prose">' + "".join(P) + "</div>", "narrative") if P else ""
 
 
 def _decisions(L):
     d = L["decisions"]
     if not d["total"]:
         return ""
-    P = ["<h2>Decision Patterns</h2>"]
-    top = next(iter(d["domains"].items()), None)
-    lead = f"{e(top[0].capitalize())} accounts for {top[1]} of {d['total']} detected decisions. " if top else ""
-    types = ", ".join(f"{v['total']} {TYPE_LABEL[t]}"
-                      for t, v in sorted(d["by_type"].items(), key=lambda x: -x[1]["total"]) if v["total"])
-    P.append(f"<p>{lead}By kind: {types}. {d['positive']} of {d['total']} have explicit proof they worked "
-             f"(a passing check, a matching commit, or you confirming it); the rest are unproven, not failed.</p>")
+    P = []
     kinds = sorted(((t, v) for t, v in d["by_type"].items() if v["total"]), key=lambda x: -x[1]["total"])
+    P.append('<h3 class="sub-h" style="margin-top:0">By kind</h3>')
     P.append(_bars([(TYPE_LABEL[t].capitalize(), [(v["positive"], "var(--s1)"), (v["total"] - v["positive"], "var(--s2)")],
                      f"{v['positive']} of {v['total']}", f"{v['positive']} proven, {v['total'] - v['positive']} unproven")
                     for t, v in kinds], legend=[("proven to work", "var(--s1)"), ("unproven", "var(--s2)")]))
     if d["domains"]:
-        P.append('<p class="small" style="margin:0 0 4px">Decisions by area (a decision can carry two areas)</p>')
+        P.append('<h3 class="sub-h">By area</h3><p class="small" style="margin:-6px 0 8px">A decision can carry two areas.</p>')
         P.append(_bars([(k.capitalize(), [(v, "var(--s1)")], f"{v}", "") for k, v in d["domains"].items()]))
     if d["patterns"]:
-        P.append('<p class="small" style="margin:0 0 4px">Named patterns · hover for an example</p>')
+        P.append('<h3 class="sub-h">Named patterns</h3><p class="small" style="margin:-6px 0 8px">Hover a row for an example.</p>')
         P.append(_bars([(x["name"], [(x["count"], "var(--s1)")], f"{x['count']}",
                          f"e.g. {x['examples'][0]}" if x["examples"] else "") for x in d["patterns"][:8]]))
-    for i, x in enumerate((L.get("synthesis") or {}).get("insights") or []):
-        tr = f' <span class="try">Try: {e(x["try"])}</span>' if x.get("try") else ""
-        P.append(f"<p><b>{e(x['title'])}.</b> {e(x['detail'])}{_why(x.get('why'), f'i{i}')}{tr}</p>")
-    return "".join(P)
+    ins = (L.get("synthesis") or {}).get("insights") or []
+    if ins:
+        P.append('<h3 class="sub-h">What stands out</h3>' + _items(ins, "i"))
+    desc = (f"{d['total']} moments where you made a real call about the work. {d['positive']} have proof they worked "
+            "(a passing check, a matching commit, or you confirming it); the rest are unproven, not failed.")
+    return _section("Decision patterns", "".join(P), "decisions", e(desc))
 
 
-def _narrative(data, L):
-    syn = (L or {}).get("synthesis")
-    P = []
-    if syn and syn["narrative"]:
-        P.append(f"<p>{e(syn['narrative']['text'])}{_why(syn['narrative']['why'], 'n')}</p>")
-    if syn and (syn["built"]["projects"] or syn["built"]["stack"]):
-        P.append("<h2>What You Built</h2>")
-        if syn["built"]["projects"]:
-            P.append("<ul>" + "".join(f"<li><b>{e(p['name'])}</b>: {e(p['what'])}</li>"
-                                      for p in syn["built"]["projects"]) + "</ul>")
-        if syn["built"]["stack"]:
-            P.append(f'<p class="small">Stack: {e(", ".join(syn["built"]["stack"]))}</p>')
-    if L:
-        P.append(_decisions(L))
-    if syn and syn["strengths"]:
-        P.append("<h2>Strengths</h2><ul>" + "".join(f"<li><b>{e(x['title'])}.</b> {e(x['evidence'])}{_why(x['why'], f's{i}')}</li>"
-                                                     for i, x in enumerate(syn["strengths"])) + "</ul>")
-    P.append("<h2>Growth Areas</h2>")
-    for i, x in enumerate((syn or {}).get("growth") or []):
-        tr = f' <span class="try">Try: {e(x["try"])}</span>' if x["try"] else ""
-        P.append(f"<p><b>{e(x['title'])}.</b> {e(x['evidence'])}{_why(x['why'], f'g{i}')}{tr}</p>")
-    P.append(_watchpoint(data["watchpoint"]))
-    return _section("Your narrative", '<div class="prose">' + "".join(P) + "</div>")
+def _strengths_growth(data, L):
+    syn = (L or {}).get("synthesis") or {}
+    out = []
+    if syn.get("strengths"):
+        out.append(_section("Strengths", _items(syn["strengths"], "s"), "strengths",
+                            "Each one cites the measured facts behind it. Hover <i>why</i>."))
+    growth = _items(syn["growth"], "g") if syn.get("growth") else ""
+    out.append(_section("Growth areas", growth + _watchpoint(data["watchpoint"]), "growth",
+                        "Specific, with something to try in your next session."))
+    return "".join(out)
+
+
+# The quadrant: x = expand ideas vs constrain them; y = in a single moment vs across the work.
+QUAD = [("dances_with_robots", "Expand · in the moment"), ("frame_breaker", "Constrain · in the moment"),
+        ("cognitive_breadth", "Expand · across the work"), ("architects_veto", "Constrain · across the work")]
 
 
 def _usage(L):
-    if not L["usage"]:
+    allu = {u["key"]: u for u in L.get("usage_all") or [dict(u, shown=True) for u in L["usage"]]}
+    if not allu:
         return ""
-    chart = _bars([(u["name"], [(u["count"], "var(--s1)")], f'{u["count"]}', u["gloss"]) for u in L["usage"]])
-    return _section("How you use AI", chart + '<div class="badges">' + "".join(
-        f'<div><p class="b-name">{e(u["name"])}</p><p>{e(u["gloss"])}</p>'
-        f'<p class="b-ev">{u["count"]} evidence point{"s" if u["count"] != 1 else ""}</p></div>'
-        for u in L["usage"]) + "</div>")
+    # breadth counts sessions out of a sample; the others count evidence points, so they share a scale
+    top = max((u["count"] for k, u in allu.items() if k != "cognitive_breadth"), default=0) or 1
+    lead = max((u for k, u in allu.items() if k != "cognitive_breadth"), key=lambda u: u["count"])["key"]
+
+    def cell(key, tag):
+        u = allu.get(key, {"name": key, "gloss": "", "count": 0, "shown": False})
+        sample = L.get("breadth_sample") or 10
+        breadth = key == "cognitive_breadth"
+        unit = f"in {u['count']} of {sample} sampled sessions" if breadth else "evidence points"
+        width = 100 * u["count"] / (sample if breadth else top)
+        cls = "qc" + (" top" if key == lead and u["shown"] else "") + ("" if u["shown"] else " off")
+        val = (f'<span class="qv"><b>{u["count"]}</b>{e(unit)}</span>' if u["shown"]
+               else '<span class="qv">not seen yet</span>')
+        return (f'<div class="{cls}"><span class="qtag">{e(tag)}</span><span class="qn">{e(u["name"])}</span>'
+                f'<span class="qg">{e(u["gloss"])}</span>{val}'
+                f'<span class="qbar"><i style="width:{min(width, 100):.0f}%"></i></span></div>')
+
+    grid = ('<div class="quad" role="group" aria-label="How you use AI, by expanding or constraining ideas and by '
+            'moment or across the work"><span class="qcorner"></span><span class="qx">Expand ideas</span>'
+            '<span class="qx">Constrain ideas</span><span class="qy">In the moment</span>'
+            + cell(*QUAD[0]) + cell(*QUAD[1]) + '<span class="qy">Across the work</span>' + cell(*QUAD[2])
+            + cell(*QUAD[3]) + "</div>")
+    return _section("How you use AI", grid, "ai",
+                    "Four ways builders work with agents, placed by whether they open ideas up or narrow them down, "
+                    "and whether it happens turn by turn or across a whole project.")
 
 
 def _axes(L):
@@ -359,10 +446,10 @@ def _axes(L):
     plot.append('<div class="ticks"><div></div><div><span>0</span><span>5</span><span>10</span></div><div></div></div></div>')
     rows = '<details class="tbl"><summary>Table view with notes</summary><div class="scroll"><table><tr><th>axis</th>' \
            '<th>median</th><th>middle half</th><th>best segment</th><th>weakest segment</th></tr>' + rows + "</table></div></details>"
-    return _section("The five axes", '<p class="small" style="margin:0 0 12px">Scored 0–10 per segment by your LLM. '
-                    "Paxel computes these and sends them to YC, but doesn't show them on your report. There's no "
-                    "cohort here, so no percentile. Hover a row for its best and weakest segment.</p>"
-                    + "".join(plot) + rows)
+    return _section("The five axes", "".join(plot) + rows, "axes",
+                    "Scored 0–10 per segment by your LLM. Paxel computes these and sends them to YC, but doesn't "
+                    "show them on your report. There's no cohort here, so no percentile. Hover a row for its best "
+                    "and weakest segment.")
 
 
 def _health(quality):
@@ -376,16 +463,15 @@ def _health(quality):
         f'<td class="num">{"—" if q["conventional_pct"] is None else str(q["conventional_pct"]) + "%"}</td>'
         f'<td class="num">{q["reverts"]}</td><td class="num">{q["agent_config_words"]:,}</td></tr>' for q in quality)
     ranked = sorted(quality, key=lambda q: -(q["test_to_code"] or 0))
-    chart = ('<p class="small" style="margin:0 0 4px">Test-to-code ratio (lines of test per line of source) · '
-             'hover for CI, lint and large files</p>'
-             + _bars([(q["repo"], [(q["test_to_code"] or 0, "var(--s1)")],
+    chart = (_bars([(q["repo"], [(q["test_to_code"] or 0, "var(--s1)")],
                        "—" if q["test_to_code"] is None else f'{q["test_to_code"]:g}',
                        f'{q["test_files"]} test files · CI {yn(q["ci"])} · lint {yn(q["lint"])} · Docker {yn(q["docker"])} · '
                        f'{q["files_over_500"]} files over 500 lines · {q["reverts"]} reverts') for q in ranked]))
     return _section("Repo health", chart + '<details class="tbl"><summary>Table view</summary>'
                     '<div class="scroll"><table><tr><th>repo</th><th>test:code</th><th>test files</th>'
                     "<th>CI</th><th>Docker</th><th>lint</th><th>files &gt;500 lines</th><th>conventional</th>"
-                    f"<th>reverts</th><th>agent config words</th></tr>{rows}</table></div></details>")
+                    f"<th>reverts</th><th>agent config words</th></tr>{rows}</table></div></details>", "health",
+                    "Test-to-code ratio: lines of test per line of source. Hover a repo for CI, lint and large files.")
 
 
 def render(data, out_dir):
@@ -407,14 +493,17 @@ def render(data, out_dir):
          f'<h1>Builder Lens <span class="sub">a local version inspired by Paxel</span></h1><p class="meta">{e(h["scope"])} · {h["sessions"]} sessions · {e(h["date"])}'
          f'{" · " + e(tools) if tools else ""}</p>',
          f'<p class="verdict">{verdict}</p>',
-         _deck(tiles, sig),
-         _narrative(data, L)]
+         _deck(tiles, sig)]
+    SECTIONS.clear()
+    body = []
     if L:
-        P += [_usage(L), _axes(L)]
+        body += [_narrative(L), _decisions(L), _strengths_growth(data, L), _usage(L), _axes(L)]
     else:
-        P.append(_section("Not run: the LLM stage", '<ul class="pending prose">' + "".join(
-            f"<li><b>{e(t)}</b>: {e(d)}</li>" for t, d in PENDING) + "</ul>"))
-    P.append(_health(data["quality"]))
+        body.append(_section("Not run: the LLM stage", '<ul class="pending prose">' + "".join(
+            f"<li><b>{e(t)}</b>: {e(d)}</li>" for t, d in PENDING) + "</ul>", "pending"))
+        body.append(_strengths_growth(data, None))
+    body.append(_health(data["quality"]))
+    P += [_toc()] + body
 
     x = h["excluded"]
     foot = (f'Generated locally by builder-lens. Analyzed {h["sessions_analyzed"]} of {h["sessions"]} human sessions '

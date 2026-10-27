@@ -286,6 +286,10 @@ def aggregate(results):
                       "patterns": [{"name": n, "count": c, "examples": examples[n]} for n, c in patterns.most_common()]},
         "usage": [{"key": k, "name": USAGE[k][0], "gloss": USAGE[k][1], "count": usage[k]}
                   for k in USAGE if usage[k] >= USAGE_MIN],
+        # all four, for the quadrant: below USAGE_MIN they show as "not seen yet"
+        "usage_all": [{"key": k, "name": USAGE[k][0], "gloss": USAGE[k][1], "count": usage[k],
+                       "shown": usage[k] >= USAGE_MIN} for k in USAGE],
+        "breadth_sample": min(len(broad), BREADTH_SAMPLE),
         "scores": scores,
     }
 
