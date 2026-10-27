@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Regenerate docs/images/builder-lens.gif from the --demo report.
+"""Regenerate the README demo: docs/images/builder-lens.gif plus the "What you get" screenshots.
 
-Renders the made-up builder in light mode, captures one 2x screenshot per state (hover, flip,
-scroll position) with headless Chrome, then stitches them with ffmpeg crossfades. Needs Google Chrome
-and ffmpeg; uses only made-up data.
+Renders the made-up builder in dark mode, captures one 2x screenshot per state (hover, flip,
+scroll position) with headless Chrome, then stitches them with ffmpeg crossfades. Needs Google
+Chrome and ffmpeg; uses only made-up data.
 
-    python3 scripts/demo_gif.py [--frames DIR] [--width 1000]
+    python3 scripts/demo_gif.py [--theme dark|light] [--frames DIR] [--width 1000]
 """
 import argparse
 import os
@@ -45,9 +45,10 @@ SEQ = [
     ("11-skill", 3.2, "go('#skill',-24);"),
 ]
 FADE, FPS = 0.35, 12
+STILLS = [("04-card-flip", "card-flip"), ("06-decisions", "decisions"), ("09-quadrant", "quadrant"), ("11-skill", "skill")]
 
 
-def capture(work, frames):
+def capture(work, frames, theme):
     subprocess.run([sys.executable, os.path.join(ROOT, "builder_lens.py"), "--demo", "--no-open", "--out", work],
                    check=True, stdout=subprocess.DEVNULL)
     with open(os.path.join(work, "report.html"), encoding="utf-8") as fh:
@@ -55,7 +56,7 @@ def capture(work, frames):
     profile = os.path.join(work, "chrome-profile")
     for name, _, js in SEQ:
         page = os.path.join(work, name + ".html")
-        script = f"<script>{GO}document.documentElement.dataset.theme='light';{js}</script>"
+        script = f"<script>{GO}document.documentElement.dataset.theme='{theme}';{js}</script>"
         with open(page, "w", encoding="utf-8") as fh:
             fh.write(src.replace("</head>", CSS + "</head>").replace("</body>", script + "</body>"))
         subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--window-size=1440,900",
@@ -83,17 +84,24 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--frames", help="keep the 2x PNG frames in this folder")
     ap.add_argument("--width", type=int, default=1000)
-    ap.add_argument("--out", default=os.path.join(ROOT, "docs", "images", "builder-lens.gif"))
+    ap.add_argument("--theme", choices=("dark", "light"), default="dark")
+    ap.add_argument("--out-dir", default=os.path.join(ROOT, "docs", "images"))
     args = ap.parse_args()
     for tool in (CHROME, "ffmpeg"):
         if not shutil.which(tool) and not os.path.exists(tool):
             sys.exit(f"needs {tool}")
+    out = os.path.join(args.out_dir, "builder-lens.gif")
     with tempfile.TemporaryDirectory(prefix="builder-lens-gif-") as work:
         frames = args.frames or os.path.join(work, "frames")
         os.makedirs(frames, exist_ok=True)
-        capture(work, frames)
-        stitch(frames, args.out, args.width)
-    print(f"{args.out} ({os.path.getsize(args.out) / 1e6:.1f} MB, {sum(d for _, d, _ in SEQ):.0f}s)")
+        capture(work, frames, args.theme)
+        stitch(frames, out, args.width)
+        # the README's "What you get" grid, from the same frames
+        for frame, name in STILLS:
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", os.path.join(frames, frame + ".png"),
+                            "-vf", "scale=1600:-2:flags=lanczos", os.path.join(args.out_dir, name + ".png")], check=True)
+    print(f"{out} ({os.path.getsize(out) / 1e6:.1f} MB, {sum(d for _, d, _ in SEQ):.0f}s) and "
+          f"{len(STILLS)} screenshots, {args.theme} theme")
 
 
 if __name__ == "__main__":
