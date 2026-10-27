@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Regenerate docs/images/builder-lens.gif from the --demo report.
 
-Renders the made-up builder, captures one 2x screenshot per state (hover, flip, scroll position,
-dark mode) with headless Chrome, then stitches them with ffmpeg crossfades. Needs Google Chrome
+Renders the made-up builder in light mode, captures one 2x screenshot per state (hover, flip,
+scroll position) with headless Chrome, then stitches them with ffmpeg crossfades. Needs Google Chrome
 and ffmpeg; uses only made-up data.
 
     python3 scripts/demo_gif.py [--frames DIR] [--width 1000]
@@ -42,9 +42,7 @@ SEQ = [
     ("08-growth", 2.0, "go('#growth',-24);"),
     ("09-quadrant", 2.6, "go('#ai',-24);"),
     ("10-axes", 2.2, "go('#axes',-24);document.querySelector('#axes .hrow').classList.add('tipon');"),
-    ("11-skill", 2.8, "go('#skill',-24);"),
-    ("12-dark-hero", 1.8, "document.documentElement.dataset.theme='dark';"),
-    ("13-dark-quadrant", 2.2, "document.documentElement.dataset.theme='dark';go('#ai',-24);"),
+    ("11-skill", 3.2, "go('#skill',-24);"),
 ]
 FADE, FPS = 0.35, 12
 
@@ -57,7 +55,7 @@ def capture(work, frames):
     profile = os.path.join(work, "chrome-profile")
     for name, _, js in SEQ:
         page = os.path.join(work, name + ".html")
-        script = f"<script>{GO}document.documentElement.dataset.theme=document.documentElement.dataset.theme||'light';{js}</script>"
+        script = f"<script>{GO}document.documentElement.dataset.theme='light';{js}</script>"
         with open(page, "w", encoding="utf-8") as fh:
             fh.write(src.replace("</head>", CSS + "</head>").replace("</body>", script + "</body>"))
         subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--window-size=1440,900",

@@ -2,7 +2,7 @@
 
 **See how you actually build with AI agents, on your own machine, with the AI you already use.**
 
-![A Builder Lens report: a why hover on the tagline, a stat card flipping, decision charts, strengths, the How you use AI quadrant, the five axes, the agent skill, then dark mode](docs/images/builder-lens.gif)
+![A Builder Lens report: a why hover on the tagline, a stat card flipping, decision charts, strengths, the How you use AI quadrant, the five axes and the agent skill](docs/images/builder-lens.gif)
 
 *The GIF and screenshots use the made-up builder from `--demo`. Regenerate the GIF with
 `python3 scripts/demo_gif.py` (needs Chrome and ffmpeg).*
