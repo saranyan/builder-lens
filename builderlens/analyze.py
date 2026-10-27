@@ -131,6 +131,62 @@ Reply with ONLY this JSON object:
 """
 
 
+SKILL_PROMPT = """
+You are writing a working-style guide for AI coding agents (Claude Code, Codex) that will work
+with one developer. The input is JSON: an "evidence" object of measured facts about how this
+developer actually works, plus the strengths, growth areas and decision patterns already found.
+You have no tools; use only the input.
+
+Write instructions TO THE AGENT, in the imperative ("Before X, do Y"). Each must name a concrete
+trigger and a concrete action the agent can take inside a session. Prefer rules that support the
+developer's growth areas (e.g. prompt for the plan they tend to skip, show verification output
+before claiming done) and that fit how they already steer (their decision patterns). No generic
+advice that would apply to anyone ("write clean code", "be helpful").
+
+Rules:
+- rules: 5-8 things the agent should do.
+- avoid: 2-4 things the agent should not do with this developer.
+- communication: 2-4 notes on how to talk with them (prompt length, how they approve, how often
+  they redirect), each grounded in the evidence.
+- Every item has "why": 1-3 ids from the input's "evidence" object that justify it. Every number
+  you write must appear in the facts you cite. Items without real evidence are discarded.
+- Plain text, no markdown, no names of people, no secrets.
+
+Reply with ONLY this JSON object:
+{"rules": [{"text": "...", "why": ["evidence id"]}],
+ "avoid": [{"text": "...", "why": ["evidence id"]}],
+ "communication": [{"text": "...", "why": ["evidence id"]}]}
+"""
+
+
+def _skill_input(agg, synth, catalog):
+    syn = synth or {}
+    return redact(json.dumps({
+        "evidence": catalog,
+        "strengths": [{"title": x["title"], "evidence": x["evidence"]} for x in syn.get("strengths") or []],
+        "growth_areas": [{"title": x["title"], "evidence": x["evidence"], "try": x["try"]} for x in syn.get("growth") or []],
+        "decision_patterns": [{"name": p["name"], "count": p["count"], "examples": p["examples"]}
+                              for p in agg["decisions"]["patterns"][:10]],
+    }, indent=1))
+
+
+def clean_skill(r, catalog):
+    """Keep only agent instructions that cite real evidence and quote no number they can't back."""
+    if not r:
+        return None
+    out = {}
+    for k, n in (("rules", 8), ("avoid", 4), ("communication", 4)):
+        items = []
+        for x in r.get(k) or [] if isinstance(r.get(k), list) else []:
+            if not isinstance(x, dict):
+                continue
+            text, why = _str(x.get("text"), 400), cited(x.get("why"), catalog)
+            if text and why and numbers_backed(text, why):
+                items.append({"text": text, "why": why})
+        out[k] = items[:n]
+    return out if out["rules"] else None
+
+
 # ============================================================================== segmenting
 
 def _clip(text, n):
@@ -456,10 +512,12 @@ def run(llm, sessions, data, workers=4, log=print):
                      caption=f"{round(share * 100)}% of your decisions are product calls — you steer by what the user needs")
 
     log("  writing the synthesis…")
-    synth = clean_synthesis(llm.ask("synthesis", SYNTH_PROMPT, _synth_input(data, results, agg)),
-                            evidence_catalog(data, agg))
+    catalog = evidence_catalog(data, agg)
+    synth = clean_synthesis(llm.ask("synthesis", SYNTH_PROMPT, _synth_input(data, results, agg)), catalog)
+    log("  writing the agent skill…")
+    skill = clean_skill(llm.ask("skill", SKILL_PROMPT, _skill_input(agg, synth, catalog)), catalog)
 
-    return dict(agg, backend=llm.label, synthesis=synth,
+    return dict(agg, backend=llm.label, synthesis=synth, skill=skill,
                 segments=[dict(m, title=r["title"], summary=r["summary"], project=r["project"],
                                scores={a: v["score"] for a, v in r["scores"].items()}) for m, r in results],
                 calls={"segments": len(segs), "ok": len(results), "cached": llm.stats["cached"],

@@ -4,7 +4,7 @@ import sys
 import webbrowser
 from datetime import date
 
-from . import analyze, gitdata, llm, metrics, quality, report, sources
+from . import analyze, demo, gitdata, llm, metrics, quality, report, skillfile, sources
 
 
 def main(argv=None):
@@ -20,7 +20,20 @@ def main(argv=None):
     ap.add_argument("--model", help="model for --llm (default: haiku for claude, your config for codex)")
     ap.add_argument("--workers", type=int, default=4, help="parallel LLM calls (default: 4)")
     ap.add_argument("--no-llm", action="store_true", help="skip the LLM stage: deterministic stats only")
+    ap.add_argument("--install-skill", action="store_true",
+                    help=f"also install the generated agent skill to ~/.claude/skills/{skillfile.SKILL_NAME}/")
+    ap.add_argument("--demo", action="store_true",
+                    help="render a report for a made-up builder: no transcripts read, nothing sent anywhere")
     args = ap.parse_args(argv)
+
+    if args.demo:
+        data = demo.data()
+        path = report.render(data, args.out)
+        files = skillfile.write(data["llm"]["skill"], data["header"], args.out)
+        print(f"Demo report (made-up data): {path}\nDemo agent skill: {files['skill']}")
+        if not args.no_open:
+            webbrowser.open("file://" + os.path.abspath(path))
+        return 0
 
     runner = None
     if not args.no_llm:
@@ -74,6 +87,14 @@ def main(argv=None):
     for t in data["tiles"][1:]:
         print(f"  · {t['question']:<38} {t['value']}")
     print(f"\nWrote {path} and report.json")
+    sk = (data.get("llm") or {}).get("skill")
+    if sk:
+        files = skillfile.write(sk, data["header"], args.out)
+        print(f"Agent skill: {files['skill']}\n  Codex: paste {files['agents']} into AGENTS.md")
+        if args.install_skill:
+            print(f"  Installed for Claude Code: {skillfile.install(files['skill'])}")
+        else:
+            print("  Install it for Claude Code with --install-skill")
     if not args.no_open:
         webbrowser.open("file://" + os.path.abspath(path))
     return 0

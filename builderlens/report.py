@@ -8,6 +8,8 @@ import json
 import os
 from html import escape as e
 
+from . import skillfile
+
 PENDING = [
     ("Your narrative", "A one-paragraph read on how you build, and a one-line tagline."),
     ("What You Built", "Projects, domains and stack, named from per-session summaries."),
@@ -81,6 +83,17 @@ h3.sub-h{font:600 19px/1.3 var(--display);letter-spacing:-.01em;margin:36px 0 12
 .watch{border:1px dashed var(--line);border-radius:6px;padding:16px 18px;margin:8px 0 0}
 .watch .k{font:500 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--line);margin:0 0 8px}
 .watch p{margin:0;font-size:15px}
+/* agent skill: the rules as a list, plus copy/download */
+.sk-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+.btn{font:500 14px/1 var(--font);padding:9px 14px;border-radius:6px;border:1px solid var(--line);background:var(--line);color:var(--bg);
+cursor:pointer;text-decoration:none}
+.btn.ghost{background:transparent;color:var(--line)}
+.btn:focus-visible{outline:2px solid var(--line);outline-offset:2px}
+.sk-h{font:500 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:24px 0 10px}
+.sk-list{list-style:none;padding:0;margin:0;border:1px solid var(--hair);border-radius:8px;background:var(--card)}
+.sk-list li{padding:12px 16px;border-top:1px solid var(--hair);font-size:15px}
+.sk-list li:first-child{border-top:0}
+.sk-list li.avoid{box-shadow:inset 3px 0 0 var(--s2)}
 /* section index, sticky under the deck */
 .toc{position:sticky;top:0;z-index:150;margin:40px -16px 0;padding:10px 16px;display:flex;flex-wrap:wrap;gap:4px 18px;
 background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--hair)}
@@ -389,6 +402,44 @@ def _strengths_growth(data, L):
     return "".join(out)
 
 
+COPY_JS = """<script>
+(function () {
+  var b = document.getElementById('sk-copy'), src = document.getElementById('sk-src');
+  if (!b || !src) return;
+  b.addEventListener('click', function () {
+    function done() { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy SKILL.md'; }, 1600); }
+    if (navigator.clipboard) { navigator.clipboard.writeText(src.value).then(done, fallback); } else { fallback(); }
+    function fallback() { src.hidden = false; src.select(); document.execCommand('copy'); src.hidden = true; done(); }
+  });
+})();
+</script>"""
+
+
+def _skill(L, header):
+    sk = L.get("skill")
+    if not sk:
+        return ""
+
+    def lst(items, cls=""):
+        return '<ul class="sk-list">' + "".join(
+            f'<li class="{cls}">{e(x["text"])}{_why(x["why"], f"k{cls}{i}")}</li>' for i, x in enumerate(items)) + "</ul>"
+
+    inner = ['<div class="sk-actions"><button class="btn" id="sk-copy" type="button">Copy SKILL.md</button>'
+             f'<a class="btn ghost" href="skill/{skillfile.SKILL_NAME}/SKILL.md" download>Download for Claude Code</a>'
+             '<a class="btn ghost" href="skill/AGENTS.md" download>Download for Codex (AGENTS.md)</a></div>',
+             f'<textarea id="sk-src" hidden readonly>{e(skillfile.skill_md(sk, header))}</textarea>']
+    if sk["rules"]:
+        inner.append('<p class="sk-h">Do</p>' + lst(sk["rules"]))
+    if sk["avoid"]:
+        inner.append('<p class="sk-h">Avoid</p>' + lst(sk["avoid"], "avoid"))
+    if sk["communication"]:
+        inner.append('<p class="sk-h">How you communicate</p>' + lst(sk["communication"]))
+    return _section("Your agent skill", "".join(inner), "skill",
+                    "Instructions for your coding agents, written from this report: when to ask for a plan, how to "
+                    "show verification, how you steer. Every one cites the facts it's based on. Run with "
+                    "<code>--install-skill</code> to add it to Claude Code.")
+
+
 # The quadrant: x = expand ideas vs constrain them; y = in a single moment vs across the work.
 QUAD = [("dances_with_robots", "Expand · in the moment"), ("frame_breaker", "Constrain · in the moment"),
         ("cognitive_breadth", "Expand · across the work"), ("architects_veto", "Constrain · across the work")]
@@ -497,7 +548,7 @@ def render(data, out_dir):
     SECTIONS.clear()
     body = []
     if L:
-        body += [_narrative(L), _decisions(L), _strengths_growth(data, L), _usage(L), _axes(L)]
+        body += [_narrative(L), _decisions(L), _strengths_growth(data, L), _usage(L), _axes(L), _skill(L, h)]
     else:
         body.append(_section("Not run: the LLM stage", '<ul class="pending prose">' + "".join(
             f"<li><b>{e(t)}</b>: {e(d)}</li>" for t, d in PENDING) + "</ul>", "pending"))
@@ -516,7 +567,7 @@ def render(data, out_dir):
         failed = f', {c["failed"]} failed' if c["failed"] else ""
         foot += (f' Qualitative sections by {e(L["backend"])} from redacted excerpts: {c["ok"]} of {c["segments"]} '
                  f'segments analyzed{failed}.')
-    P.append(f"</div><footer>{foot}</footer></div>{FLIP_JS}</body></html>")
+    P.append(f"</div><footer>{foot}</footer></div>{FLIP_JS}{COPY_JS}</body></html>")
     path = os.path.join(out_dir, "report.html")
     with open(path, "w", encoding="utf-8") as fh:
         fh.write("".join(P))

@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
-from builderlens import analyze, gitdata, llm, metrics, redact, report, sources  # noqa: E402
+from builderlens import analyze, gitdata, llm, metrics, redact, report, skillfile, sources  # noqa: E402
 
 T0 = datetime(2026, 10, 1, 9, 0, tzinfo=timezone.utc)
 
@@ -197,13 +197,20 @@ FAKE_SYNTH = {"tagline": {"text": "You ship fast; next, add tests.", "why": ["ca
                            + [{"title": "Unbacked", "evidence": "trust me", "why": []}],
               "growth": [{"title": "Plan", "evidence": "planned sessions are rare", "try": "write plan.md", "why": "watchpoint"}],
               "insights": []}
+FAKE_SKILL = {"rules": [{"text": "Before multi-repo builds, ask for a 3-line plan.", "why": ["watchpoint"]},
+                        {"text": "Ship 99 things a day.", "why": ["card.ship"]},
+                        {"text": "No evidence here.", "why": []}],
+              "avoid": [{"text": "Don't claim done without output.", "why": ["decisions.outcomes"]}],
+              "communication": "not a list"}
 
 
 class TestLLMStage(Fixture):
     def fake(self, calls):
         def run(prompt):
             calls.append(prompt)
-            body = FAKE_SYNTH if prompt.lstrip().startswith("You are writing") else FAKE_SEGMENT
+            p = prompt.lstrip()
+            body = (FAKE_SKILL if p.startswith("You are writing a working-style") else
+                    FAKE_SYNTH if p.startswith("You are writing") else FAKE_SEGMENT)
             return "Sure! ```json\n" + json.dumps(body) + "\n```"
         return run
 
@@ -238,7 +245,7 @@ class TestLLMStage(Fixture):
         calls, cache = [], tempfile.mkdtemp(dir=self.tmp)
         L = analyze.run(llm.LLM("claude", cache_dir=cache, run=self.fake(calls)), ss, data, workers=2, log=lambda *_: None)
         self.assertEqual(L["calls"]["ok"], 2)
-        self.assertEqual(len(calls), 3)                               # 2 segments + synthesis
+        self.assertEqual(len(calls), 4)                               # 2 segments + synthesis + skill
         d = L["decisions"]
         self.assertEqual(d["total"], 6)                               # invalid type dropped, 3 per segment
         self.assertEqual(d["positive"], 2)                            # unproven "positive" and "weird" → unknown
@@ -256,7 +263,18 @@ class TestLLMStage(Fixture):
         self.assertIn("How much did you ship?", syn["tagline"]["why"][0])
         self.assertIn("Unresolved errors per session", syn["growth"][0]["why"][0])
         L2 = analyze.run(llm.LLM("claude", cache_dir=cache, run=self.fake(calls)), ss, data, workers=2, log=lambda *_: None)
-        self.assertEqual((len(calls), L2["calls"]["cached"]), (3, 3))       # all from cache
+        self.assertEqual((len(calls), L2["calls"]["cached"]), (4, 4))       # all from cache
+        sk = L["skill"]
+        self.assertEqual([x["text"] for x in sk["rules"]], ["Before multi-repo builds, ask for a 3-line plan."])
+        self.assertEqual(len(sk["avoid"]), 1)
+        self.assertEqual(sk["communication"], [])
+        files = skillfile.write(sk, data["header"], tempfile.mkdtemp(dir=self.tmp))
+        with open(files["skill"], encoding="utf-8") as fh:
+            md = fh.read()
+        self.assertTrue(md.startswith(f"---\nname: {skillfile.SKILL_NAME}\ndescription: "))
+        self.assertIn("Based on: Unresolved errors per session", md)
+        with open(files["agents"], encoding="utf-8") as fh:
+            self.assertIn("<!-- builder-lens:start", fh.read())
         data["llm"] = L
         out = tempfile.mkdtemp(dir=self.tmp)
         with open(report.render(data, out), encoding="utf-8") as fh:
@@ -266,6 +284,7 @@ class TestLLMStage(Fixture):
         self.assertIn("How it's measured", html)                  # every card has a back
         self.assertIsNone(L["synthesis"]["narrative"])            # cites a number not in the input → dropped
         self.assertNotIn("Strong", html)
+        self.assertIn('id="sk-copy"', html)
         self.assertIn("Full Stop and Investigate", html)
         self.assertNotIn("Not run: the LLM stage", html)
 
@@ -278,6 +297,17 @@ class TestLLMStage(Fixture):
         self.assertIsNone(analyze.verified_claim("plain string", cat))
         self.assertIsNone(analyze.verified_claim({"text": "you shipped 11 lines", "why": ["card.ship"]}, cat))
         self.assertIsNotNone(analyze.verified_claim({"text": "10 lines; next, a 3-line plan", "why": ["card.ship"]}, cat))
+
+    def test_demo_renders_every_section(self):
+        out = tempfile.mkdtemp(dir=self.tmp)
+        from builderlens import cli
+        self.assertEqual(cli.main(["--demo", "--no-open", "--out", out]), 0)
+        with open(os.path.join(out, "report.html"), encoding="utf-8") as fh:
+            html = fh.read()
+        for sid in ("narrative", "decisions", "strengths", "growth", "ai", "axes", "skill", "health"):
+            self.assertIn(f'id="{sid}"', html)
+        self.assertGreaterEqual(html.count('class="why"'), 10)       # every demo claim resolved its evidence
+        self.assertTrue(os.path.exists(os.path.join(out, "skill", skillfile.SKILL_NAME, "SKILL.md")))
 
     def test_product_thinker(self):
         agg = {"decisions": {"total": 20, "by_type": {"product_insight": {"total": 9}}, "domains": {"product": 18}}}

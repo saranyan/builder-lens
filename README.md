@@ -3,6 +3,12 @@
 **See how you actually build with AI agents, on your own machine, with the AI you already use.**
 
 <!-- demo GIF goes here: docs/images/builder-lens.gif -->
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/hero-dark.png">
+  <img alt="A Builder Lens report: the tagline with a why badge, above a fanned deck of stat cards" src="docs/images/hero-light.png">
+</picture>
+
+*Screenshots use the made-up builder from `--demo`.*
 
 ## Why
 
@@ -22,13 +28,42 @@ It's a local version inspired by Paxel, worked out backwards from published Paxe
 
 ```sh
 git clone https://github.com/saranyan/builder-lens.git && cd builder-lens
-python3 builder_lens.py            # all your projects → out/report.html
+python3 builder_lens.py --demo     # a made-up builder: reads nothing, sends nothing
+python3 builder_lens.py            # your own projects → out/report.html
 ```
 
 Python 3.9+, macOS or Linux, no dependencies.
 
 By default it uses your `claude` CLI (Haiku). To use Codex instead, pass `--llm codex`.
 Both have been tested. Run with `--no-llm` for stats only, which sends nothing anywhere.
+
+## What you get
+
+<table>
+  <tr>
+    <td width="50%"><img alt="A stat card flipped to show how it's measured" src="docs/images/card-flip.png"><br><sub><b>Cards flip</b> to show how each number is measured.</sub></td>
+    <td width="50%"><img alt="Decision patterns as bar charts" src="docs/images/decisions.png"><br><sub><b>Decision patterns</b>: what kinds of calls you make, and which have proof they worked.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img alt="How you use AI as a two-by-two quadrant" src="docs/images/quadrant.png"><br><sub><b>How you use AI</b>: whether you expand or constrain ideas, in the moment or across the work.</sub></td>
+    <td width="50%"><img alt="The agent skill section with copy and download buttons" src="docs/images/skill.png"><br><sub><b>Your agent skill</b>: instructions for your agents, built from the report.</sub></td>
+  </tr>
+</table>
+
+## An agent skill, written from your own sessions
+
+The report ends with instructions for your coding agents, based on how you actually work.
+For example: "before any sync or schema change, write a short plan with a stop point and wait
+for approval", or "'ship it' is their usual approval". Each instruction lists the measured
+facts behind it.
+
+```sh
+python3 builder_lens.py --install-skill   # also installs it to ~/.claude/skills/builder-lens-working-style/
+```
+
+You get `out/skill/builder-lens-working-style/SKILL.md` for Claude Code and
+`out/skill/AGENTS.md` to paste into Codex's `AGENTS.md`. The report also has Copy and
+Download buttons. Re-run it whenever you want the skill to catch up with how you work.
 
 ## How it's different from Paxel
 
@@ -47,6 +82,8 @@ Both have been tested. Run with `--no-llm` for stats only, which sends nothing a
   numbers.
 - **Advice you can act on.** Each growth area ends with something concrete to try in your
   next session.
+- **It feeds back into your agents.** The report becomes a skill file your agents load, so
+  what it learns changes how they work with you.
 - **Honest outcomes.** A decision only counts as having worked when there's proof, such as
   a passing check, a matching commit or you confirming it. "Unproven" isn't treated as
   failure.
