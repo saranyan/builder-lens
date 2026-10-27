@@ -1,0 +1,4 @@
+# Generated reports contain YOUR data (prompts, repo names). Never commit them.
+out/
+__pycache__/
+*.pyc
