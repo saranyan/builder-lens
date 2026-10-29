@@ -1,0 +1,21 @@
+# Builder Lens
+
+> See how you actually build with AI agents, on your own machine, with the AI you already use. Builder Lens reads your Claude Code and Codex transcripts locally and turns them into a single-file HTML builder report, with stats, decision patterns, strengths, growth areas, five scored axes and an agent skill written from your own sessions. Its analysis runs through the CLI you already use (`claude` or `codex`), with excerpts redacted first, so there's no account, server or upload.
+
+A local version inspired by YC's Paxel, worked out backwards from published Paxel reports, and not affiliated with Y Combinator or Paxel. Python 3.9+, macOS or Linux, no dependencies, MIT license. Full documentation in one file: [llms-full.txt](https://raw.githubusercontent.com/saranyan/builder-lens/main/llms-full.txt).
+
+## Docs
+
+- [README](https://raw.githubusercontent.com/saranyan/builder-lens/main/README.md): What it does, how it differs from Paxel, how to try it, options, privacy and caching.
+- [Report spec](https://raw.githubusercontent.com/saranyan/builder-lens/main/REPORT_SPEC.md): Every field the report shows, how it's computed, and how confident the reverse-engineering is (known, inferred or guess).
+
+## Examples
+
+- [Demo builder](https://raw.githubusercontent.com/saranyan/builder-lens/main/builderlens/demo.py): The made-up builder behind `python3 builder_lens.py --demo`, which reads no transcripts and sends nothing.
+- [Demo GIF script](https://raw.githubusercontent.com/saranyan/builder-lens/main/scripts/demo_gif.py): Regenerates the README GIF and screenshots from the demo report (needs Chrome and ffmpeg).
+
+## API
+
+- [Command-line options](https://raw.githubusercontent.com/saranyan/builder-lens/main/builderlens/cli.py): `builder_lens.py` flags: `--project`, `--llm claude|codex`, `--model`, `--workers`, `--no-llm`, `--include-automated`, `--install-skill`, `--demo`, `--out` and `--no-open`.
+- [Agent skill output](https://raw.githubusercontent.com/saranyan/builder-lens/main/builderlens/skillfile.py): How the report becomes `SKILL.md` for Claude Code and `AGENTS.md` for Codex.
+- [Redaction](https://raw.githubusercontent.com/saranyan/builder-lens/main/builderlens/redact.py): What is scrubbed from excerpts before any model call.

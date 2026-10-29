@@ -1,0 +1,19 @@
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareSourceCode",
+  "name": "Builder Lens",
+  "description": "See how you actually build with AI agents, on your own machine, with the AI you already use. Builder Lens reads your Claude Code and Codex transcripts locally and turns them into a builder report and an agent skill, running its analysis through the CLI you already use, with no account, server or upload. A local version inspired by YC's Paxel; not affiliated with Y Combinator or Paxel.",
+  "codeRepository": "https://github.com/saranyan/builder-lens",
+  "programmingLanguage": {
+    "@type": "ComputerLanguage",
+    "name": "Python",
+    "url": "https://www.python.org"
+  },
+  "runtimePlatform": "Python 3.9+ on macOS or Linux",
+  "license": "https://opensource.org/licenses/MIT",
+  "author": {
+    "@type": "Person",
+    "name": "Saranyan Vigraham",
+    "url": "https://github.com/saranyan"
+  }
+}
